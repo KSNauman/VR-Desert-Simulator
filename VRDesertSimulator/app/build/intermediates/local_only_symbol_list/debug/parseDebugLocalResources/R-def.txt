@@ -1,0 +1,16 @@
+R_DEF: Internal format may change without notice
+local
+color black
+color white
+id btnBegin
+id btnMove
+id btnStartGame
+id glSurfaceView
+id healthBarLeft
+id healthBarRight
+layout activity_main
+layout activity_start
+layout activity_story
+string app_name
+string move_forward
+style Theme.VRDesertSimulator
