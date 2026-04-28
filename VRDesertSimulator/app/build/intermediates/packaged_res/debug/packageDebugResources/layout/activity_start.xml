@@ -4,22 +4,39 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="#222222">
+    android:background="@drawable/bg_gradient_start">
 
     <TextView
+        android:id="@+id/titleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Survive in the Desert"
-        android:textSize="32sp"
-        android:textColor="#FFFFFF"
+        android:text="SURVIVE THE DESERT"
+        android:textSize="36sp"
+        android:textColor="#FFFFD700"
         android:textStyle="bold"
-        android:layout_marginBottom="40dp" />
+        android:fontFamily="serif"
+        android:shadowColor="#AA000000"
+        android:shadowDx="3"
+        android:shadowDy="3"
+        android:shadowRadius="6"
+        android:letterSpacing="0.12"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:id="@+id/subtitleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="A VR Survival Experience"
+        android:textSize="16sp"
+        android:textColor="#CCDDBB88"
+        android:textStyle="italic"
+        android:fontFamily="serif"
+        android:layout_marginBottom="48dp" />
 
     <Button
         android:id="@+id/btnBegin"
+        style="@style/DesertButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Begin"
-        android:textSize="18sp"
-        android:padding="16dp" />
+        android:text="BEGIN" />
 </LinearLayout>

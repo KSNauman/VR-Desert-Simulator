@@ -1,16 +1,31 @@
 R_DEF: Internal format may change without notice
 local
+anim fade_in
+anim fade_out
+color amber_dark
 color black
+color btn_bg
+color btn_border
+color sand_dark
+color sand_light
+color sky_blue
+color sun_gold
+color text_gold
 color white
+drawable bg_gradient_start
+drawable bg_gradient_story
+drawable btn_styled
 id btnBegin
 id btnMove
 id btnStartGame
 id glSurfaceView
-id healthBarLeft
-id healthBarRight
+id storyText
+id subtitleText
+id titleText
 layout activity_main
 layout activity_start
 layout activity_story
 string app_name
 string move_forward
+style DesertButton
 style Theme.VRDesertSimulator

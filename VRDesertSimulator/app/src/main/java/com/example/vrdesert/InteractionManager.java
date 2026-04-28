@@ -26,6 +26,18 @@ public class InteractionManager {
         return currentGazedObjectId != -1;
     }
 
+    /** Returns gaze progress 0.0 to 1.0 for the currently targeted object */
+    public float getGazeProgress() {
+        if (currentGazedObjectId == -1) return 0f;
+        long elapsed = System.currentTimeMillis() - gazeStartTime;
+        return Math.min(1.0f, (float) elapsed / GAZE_COLLECT_MS);
+    }
+
+    /** Returns the ID of the object currently being gazed at, or -1 */
+    public int getCurrentGazedObjectId() {
+        return currentGazedObjectId;
+    }
+
     public InteractionManager(InteractionListener listener) {
         this.listener = listener;
         this.mainHandler = new Handler(Looper.getMainLooper());

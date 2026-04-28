@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 
@@ -59,6 +60,9 @@ public class TextOverlay {
     private Bitmap textBitmap;
     private Canvas textCanvas;
     private Paint textPaint;
+    private Paint titlePaint;
+    private Paint bgPaint;
+    private Paint borderPaint;
 
     public TextOverlay() {
         ByteBuffer bb = ByteBuffer.allocateDirect(quadCoords.length * 4);
@@ -84,11 +88,33 @@ public class TextOverlay {
         // Pre-allocate Canvas and Bitmap structure natively, drastically increasing vertical scale for Multi-line text!
         textBitmap = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888);
         textCanvas = new Canvas(textBitmap);
+
+        // Item text paint
         textPaint = new Paint();
-        textPaint.setTextSize(48); // Large to look good in VR
+        textPaint.setTextSize(44);
         textPaint.setColor(Color.WHITE);
         textPaint.setAntiAlias(true);
-        textPaint.setShadowLayer(5.0f, 2.0f, 2.0f, Color.BLACK);
+        textPaint.setShadowLayer(4.0f, 1.0f, 1.0f, Color.BLACK);
+
+        // Title paint (golden)
+        titlePaint = new Paint();
+        titlePaint.setTextSize(48);
+        titlePaint.setColor(Color.rgb(255, 200, 60));
+        titlePaint.setAntiAlias(true);
+        titlePaint.setFakeBoldText(true);
+        titlePaint.setShadowLayer(5.0f, 2.0f, 2.0f, Color.BLACK);
+
+        // Background panel paint
+        bgPaint = new Paint();
+        bgPaint.setColor(Color.argb(140, 10, 8, 5));
+        bgPaint.setAntiAlias(true);
+
+        // Border paint
+        borderPaint = new Paint();
+        borderPaint.setColor(Color.argb(100, 255, 200, 60));
+        borderPaint.setStyle(Paint.Style.STROKE);
+        borderPaint.setStrokeWidth(3);
+        borderPaint.setAntiAlias(true);
 
         updateText("");
     }
@@ -99,10 +125,22 @@ public class TextOverlay {
         if (!text.isEmpty()) {
             // Android Canvas drawText doesn't natively do multiline mapping. We split and increment Y offset!
             String[] lines = text.split("\n");
-            int yPos = 48;
-            for (String line : lines) {
-                textCanvas.drawText(line, 20, yPos, textPaint);
-                yPos += 52; // Push down 52px per line
+            int lineCount = lines.length;
+            int panelHeight = 30 + lineCount * 50 + 10;
+            int panelWidth = 340;
+
+            // Draw dark background panel with rounded corners
+            RectF panelRect = new RectF(8, 8, panelWidth, panelHeight);
+            textCanvas.drawRoundRect(panelRect, 16, 16, bgPaint);
+            textCanvas.drawRoundRect(panelRect, 16, 16, borderPaint);
+
+            // Draw text lines
+            int yPos = 50;
+            for (int i = 0; i < lines.length; i++) {
+                String line = lines[i];
+                Paint p = (i == 0) ? titlePaint : textPaint;
+                textCanvas.drawText(line, 24, yPos, p);
+                yPos += 50;
             }
         }
 

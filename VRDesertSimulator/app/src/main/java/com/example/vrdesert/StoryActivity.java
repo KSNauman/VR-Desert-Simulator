@@ -15,7 +15,8 @@ public class StoryActivity extends AppCompatActivity {
         btnStartGame.setOnClickListener(v -> {
             Intent intent = new Intent(StoryActivity.this, MainActivity.class);
             startActivity(intent);
-            finish(); // Prevent going back to story
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+            finish();
         });
     }
 }

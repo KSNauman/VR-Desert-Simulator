@@ -1,26 +1,42 @@
 package com.example.vrdesert;
 
 import android.content.Context;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
+/**
+ * Manages game state: health, win condition.
+ * Health updates are pushed to the VR renderer's GL health bar via a listener.
+ */
 public class GameManager {
+
+    public interface HealthListener {
+        void onHealthChanged(int health);
+    }
+
     private int health = 30;
     private final int MAX_HEALTH = 100;
     private boolean gameLocked = false;
     private Context context;
-    private ProgressBar healthBarLeft;
-    private ProgressBar healthBarRight;
+    private HealthListener healthListener;
 
-    public GameManager(Context context, ProgressBar healthBarLeft, ProgressBar healthBarRight) {
+    public GameManager(Context context) {
         this.context = context;
-        this.healthBarLeft = healthBarLeft;
-        this.healthBarRight = healthBarRight;
-        updateHealthBar();
+    }
+
+    public void setHealthListener(HealthListener listener) {
+        this.healthListener = listener;
+        // Push initial value
+        if (healthListener != null) {
+            healthListener.onHealthChanged(health);
+        }
     }
 
     public boolean isGameLocked() {
         return gameLocked;
+    }
+
+    public int getHealth() {
+        return health;
     }
 
     public void processItemCollection(GameObject.Type type, BackpackManager backpack) {
@@ -29,19 +45,15 @@ public class GameManager {
         // Health-giving items
         if (type == GameObject.Type.WATER || type == GameObject.Type.FOOD) {
             health = Math.min(health + 20, MAX_HEALTH);
-            updateHealthBar();
+            notifyHealthChanged();
         }
 
         checkWinCondition(backpack);
     }
 
-    private void updateHealthBar() {
-        if (healthBarLeft != null && healthBarRight != null) {
-            // Must run on UI Thread in reality, since Backpack update handles GL, we rely on Activity Handler safely wrapping this
-            healthBarLeft.post(() -> {
-                healthBarLeft.setProgress(health);
-                healthBarRight.setProgress(health);
-            });
+    private void notifyHealthChanged() {
+        if (healthListener != null) {
+            healthListener.onHealthChanged(health);
         }
     }
 
@@ -52,12 +64,10 @@ public class GameManager {
             
             Toast.makeText(context, "You lit a fire! The smoke alerted rescuers.", Toast.LENGTH_LONG).show();
             
-            // Simulating a delay for the final event outcome
-            if (healthBarLeft != null) {
-                healthBarLeft.postDelayed(() -> {
-                    Toast.makeText(context, "You were rescued. Congratulations!", Toast.LENGTH_LONG).show();
-                }, 4000);
-            }
+            // Simulating a delay for the final event outcome using a handler
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                Toast.makeText(context, "You were rescued. Congratulations!", Toast.LENGTH_LONG).show();
+            }, 4000);
         }
     }
 }

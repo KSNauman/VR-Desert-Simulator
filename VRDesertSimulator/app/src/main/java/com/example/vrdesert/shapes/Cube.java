@@ -9,11 +9,9 @@ public class Cube {
 
     private final FloatBuffer vertexBuffer;
     private final FloatBuffer colorBuffer;
+    private final FloatBuffer normalBuffer;
     
     private int mProgram;
-    private int mPositionHandle;
-    private int mColorHandle;
-    private int mVPMatrixHandle;
 
     static final int COORDS_PER_VERTEX = 3;
     static final int COLORS_PER_VERTEX = 4;
@@ -64,28 +62,38 @@ public class Cube {
          0.5f, -0.5f,  0.5f
     };
 
-    // Support dynamic colors based on initialized type
+    // Face normals for all 36 vertices
+    static float[] cubeNormals = generateNormals();
+
+    static float[] generateNormals() {
+        float[] normals = new float[108]; // 36 vertices * 3 components
+        float[][] faceNormals = {
+            {0, 0, 1},   // front
+            {0, 0, -1},  // back
+            {-1, 0, 0},  // left
+            {1, 0, 0},   // right
+            {0, 1, 0},   // top
+            {0, -1, 0}   // bottom
+        };
+        for (int face = 0; face < 6; face++) {
+            for (int vert = 0; vert < 6; vert++) {
+                int idx = (face * 6 + vert) * 3;
+                normals[idx]     = faceNormals[face][0];
+                normals[idx + 1] = faceNormals[face][1];
+                normals[idx + 2] = faceNormals[face][2];
+            }
+        }
+        return normals;
+    }
+
+    // Generate uniform colors (no more baked face darkness — real lighting handles it)
     static float[] generateColors(float r, float g, float b) {
         float[] colors = new float[144]; // 36 vertices * 4 color components
         for(int i = 0; i < 36; i++) {
-            // Apply baked directional lighting depending on the vertex face:
-            float faceDarkness = 1.0f;
-            
-            // Assume top face is lit brightest (vertices 24-29)
-            if(i >= 24 && i < 30) {
-                faceDarkness = 1.3f; // Sun hit strongly
-            } else if (i < 6 || (i >= 12 && i < 18)) {
-                // Assume front and right faces are well lit ambiently
-                faceDarkness = 0.9f; 
-            } else {
-                // Assume back and left faces fall entirely in baked shadow
-                faceDarkness = 0.45f;
-            }
-
-            colors[i*4] = Math.min(1.0f, r * faceDarkness);     // R
-            colors[i*4+1] = Math.min(1.0f, g * faceDarkness);   // G
-            colors[i*4+2] = Math.min(1.0f, b * faceDarkness);   // B
-            colors[i*4+3] = 1.0f;   // A
+            colors[i*4] = r;
+            colors[i*4+1] = g;
+            colors[i*4+2] = b;
+            colors[i*4+3] = 1.0f;
         }
         return colors;
     }
@@ -109,27 +117,56 @@ public class Cube {
         colorBuffer = cb.asFloatBuffer();
         colorBuffer.put(generated);
         colorBuffer.position(0);
+
+        ByteBuffer nb = ByteBuffer.allocateDirect(cubeNormals.length * 4);
+        nb.order(ByteOrder.nativeOrder());
+        normalBuffer = nb.asFloatBuffer();
+        normalBuffer.put(cubeNormals);
+        normalBuffer.position(0);
     }
 
     public void draw(float[] mvpMatrix) {
+        draw(mvpMatrix, null, null);
+    }
+
+    public void draw(float[] mvpMatrix, float[] modelMatrix, float[] normalMatrix) {
         GLES20.glUseProgram(mProgram);
 
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
+        int mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
         GLES20.glEnableVertexAttribArray(mPositionHandle);
         GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false, vertexStride, vertexBuffer);
 
-        mColorHandle = GLES20.glGetAttribLocation(mProgram, "vColor");
+        int mColorHandle = GLES20.glGetAttribLocation(mProgram, "vColor");
         GLES20.glEnableVertexAttribArray(mColorHandle);
         GLES20.glVertexAttribPointer(mColorHandle, COLORS_PER_VERTEX,
                 GLES20.GL_FLOAT, false, colorStride, colorBuffer);
 
-        mVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
+        int normalHandle = GLES20.glGetAttribLocation(mProgram, "aNormal");
+        if (normalHandle >= 0) {
+            GLES20.glEnableVertexAttribArray(normalHandle);
+            GLES20.glVertexAttribPointer(normalHandle, 3,
+                    GLES20.GL_FLOAT, false, 3 * 4, normalBuffer);
+        }
+
+        int mVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
         GLES20.glUniformMatrix4fv(mVPMatrixHandle, 1, false, mvpMatrix, 0);
+
+        if (modelMatrix != null) {
+            int mModelHandle = GLES20.glGetUniformLocation(mProgram, "uModelMatrix");
+            if (mModelHandle >= 0)
+                GLES20.glUniformMatrix4fv(mModelHandle, 1, false, modelMatrix, 0);
+        }
+        if (normalMatrix != null) {
+            int mNormalHandle = GLES20.glGetUniformLocation(mProgram, "uNormalMatrix");
+            if (mNormalHandle >= 0)
+                GLES20.glUniformMatrix4fv(mNormalHandle, 1, false, normalMatrix, 0);
+        }
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount);
 
         GLES20.glDisableVertexAttribArray(mPositionHandle);
         GLES20.glDisableVertexAttribArray(mColorHandle);
+        if (normalHandle >= 0) GLES20.glDisableVertexAttribArray(normalHandle);
     }
 }

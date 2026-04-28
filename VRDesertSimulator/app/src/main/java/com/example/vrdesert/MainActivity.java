@@ -2,9 +2,7 @@ package com.example.vrdesert;
 
 import android.os.Bundle;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ProgressBar;
 import android.opengl.GLSurfaceView;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -43,9 +41,13 @@ public class MainActivity extends AppCompatActivity implements InteractionManage
         audioEngine = new AudioEngine();
         audioEngine.startDesertWind(); // Kick off async background noise
 
-        ProgressBar healthBarLeft = findViewById(R.id.healthBarLeft);
-        ProgressBar healthBarRight = findViewById(R.id.healthBarRight);
-        gameManager = new GameManager(this, healthBarLeft, healthBarRight);
+        // GameManager with health callback to VR renderer
+        gameManager = new GameManager(this);
+        gameManager.setHealthListener(health -> {
+            if (vrRenderer != null) {
+                vrRenderer.updateHealth(health);
+            }
+        });
 
         Button btnMove = findViewById(R.id.btnMove);
         btnMove.setOnClickListener(v -> vrRenderer.moveForward());

@@ -1,12 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="amber_dark">#FF1A0E00</color>
     <color name="black">#ff000000</color>
+    <color name="btn_bg">#66000000</color>
+    <color name="btn_border">#88FFCC44</color>
+    <color name="sand_dark">#FF8B6914</color>
+    <color name="sand_light">#FFE8C87A</color>
+    <color name="sky_blue">#FF87CEEB</color>
+    <color name="sun_gold">#FFFFD700</color>
+    <color name="text_gold">#FFFFCC44</color>
     <color name="white">#ffffffff</color>
     <string name="app_name">VR Desert Simulator</string>
     <string name="move_forward">Move</string>
+    <style name="DesertButton">
+        <item name="android:background">@drawable/btn_styled</item>
+        <item name="android:textColor">@color/text_gold</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:paddingLeft">40dp</item>
+        <item name="android:paddingRight">40dp</item>
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+        <item name="android:letterSpacing">0.15</item>
+    </style>
     <style name="Theme.VRDesertSimulator" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/black</item>
         <item name="colorSecondary">@color/white</item>
         <item name="android:statusBarColor">@color/black</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowNoTitle">true</item>
     </style>
 </resources>
